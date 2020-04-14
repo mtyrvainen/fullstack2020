@@ -3,7 +3,7 @@ import Contacts from './components/Contacts'
 import FilterForm from './components/FilterForm'
 import PersonForm from './components/PersonForm'
 import Notification from './components/Notification'
-import contactService from './services/contactservice'
+import personService from './services/personservice'
 
 const App = () => {
   const [ persons, setPersons] = useState([]) 
@@ -18,20 +18,12 @@ const App = () => {
   const handleFilterChange = (event) => setContactFilter(event.target.value)
 
   useEffect(() => {
-    contactService
+    personService
       .getAll()
       .then(existingContacts => {
         setPersons(existingContacts)
       })
   }, [])
-
-  const findLargestId = (persons) => {
-    let max = 0
-    persons.map(person => {
-      if (person.id > max) max = person.id
-      return max
-    }) 
-  }
 
   const displayNotification = (text, type) => {
     setNotificationType(type)
@@ -45,19 +37,20 @@ const App = () => {
     const person = persons.find(person => person.name === oldName)
     const updatedPerson = { ...person, number: updatedNumber }
 
-    contactService
+    personService
       .update(person.id, updatedPerson)
       .then(existingPerson => {
         setPersons(persons.map(person => person.id !== updatedPerson.id ? person : updatedPerson))
         displayNotification(`Number for '${oldName}' updated`, 'notification')
+        setNewName('')
+        setNewNumber('')
       })
       .catch(error => {
-        displayNotification(`ERROR: ${oldName} has already been removed from server`, 'error')
-        setPersons(persons.filter(p => p.id !== updatedPerson.id))
+        displayNotification(`ERROR: ${error.response.data.error}`, 'error')
       })
   } 
 
-  const addName = (event) => {
+  const addPerson = (event) => {
     event.preventDefault()
 
     if (!newName || !newNumber) {
@@ -68,8 +61,6 @@ const App = () => {
     if (persons.find(o => o.name === newName)) {
       if (window.confirm(`${newName} is already addded to phonebook, replace the old number with a new one?`)) {
         updateName(newName, newNumber)
-        setNewName('')
-        setNewNumber('')
         return
       } else {
         return
@@ -78,11 +69,10 @@ const App = () => {
 
     const newPerson = {
       name: newName,
-      number: newNumber,
-      id: findLargestId(persons) + 1 
-    }
+      number: newNumber
+    } 
 
-    contactService
+    personService
       .create(newPerson)
       .then(returnedPerson => {
         setPersons(persons.concat(returnedPerson))
@@ -90,13 +80,16 @@ const App = () => {
         setNewNumber('')
         displayNotification(`'${newName} ${newNumber}' added to phonebook`, 'notification')
       })
+      .catch(error => {
+        displayNotification(`ERROR: ${error.response.data.error}`, 'error')
+      })
   }
 
   const removeName = id => {
     if (window.confirm(`Delete '${persons.find(p => p.id === id).name}'?`)) {
       let deleted = persons.find(p => p.id === id).name
 
-      contactService
+      personService
         .remove(id)
         .then(response => {
           setPersons(persons.filter(person => person.id !== id))
@@ -112,7 +105,7 @@ const App = () => {
       <FilterForm filterValue={contactFilter} filterFunction={handleFilterChange} />
 
       <h2>Add a new contact</h2>
-      <PersonForm submitfunction={addName} nameValue={newName} nameChangeFunction={handleNameChange} numberValue={newNumber} numberChangeFunction={handleNumberChange} />
+      <PersonForm submitfunction={addPerson} nameValue={newName} nameChangeFunction={handleNameChange} numberValue={newNumber} numberChangeFunction={handleNumberChange} />
       
       <h2>Numbers</h2>
       <Contacts persons={persons} filter={contactFilter} removeName={removeName} />

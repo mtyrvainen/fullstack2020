@@ -5,10 +5,10 @@ const PersonForm = ({ submitfunction, nameValue, nameChangeFunction, numberValue
 
         <form onSubmit={submitfunction}>
         <div>
-          name: <input value={nameValue} onChange={nameChangeFunction} />
+          Name: <input value={nameValue} onChange={nameChangeFunction} />
         </div>
         <div>
-          number: <input value={numberValue} onChange={numberChangeFunction} />
+          Number: <input value={numberValue} onChange={numberChangeFunction} />
         </div>
         <div>
           <button type="submit">add</button>
