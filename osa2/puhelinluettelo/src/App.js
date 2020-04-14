@@ -60,6 +60,11 @@ const App = () => {
   const addName = (event) => {
     event.preventDefault()
 
+    if (!newName || !newNumber) {
+      displayNotification(`ERROR: Name and number must both be provided for new contacts`, 'error')
+      return
+    }
+
     if (persons.find(o => o.name === newName)) {
       if (window.confirm(`${newName} is already addded to phonebook, replace the old number with a new one?`)) {
         updateName(newName, newNumber)
