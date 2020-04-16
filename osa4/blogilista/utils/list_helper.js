@@ -1,6 +1,9 @@
 const lodash = require('lodash')
 
 const dummy = (blogs) => {
+    if (blogs) {
+        1+1
+    }
     return 1
 }
 
@@ -57,7 +60,6 @@ const mostLikes = (blogs) => {
                 likes[blog.author] = blog.likes
             }
         })
-        console.log('likes:', likes)
         lodash.forEach(likes, value => {
             if (value > topValue) topValue = value
         })
