@@ -2,6 +2,6 @@ POST http://localhost:3003/api/blogs
 Content-Type: application/json
 
 {
-	"author": "Joo11 Joo",
-	"url": "joku url"
+	"title": "Uusi jota updatetaan",
+	"likes": 0
 }

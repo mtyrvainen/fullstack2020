@@ -1,0 +1,7 @@
+PUT http://localhost:3003/api/blogs/5e9895bc72d223359cabc109
+Content-Type: application/json
+
+{
+    "title": "Uusi jota updatetaan",
+    "likes": 13
+}

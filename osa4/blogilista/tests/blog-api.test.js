@@ -105,15 +105,65 @@ describe('when there is initial data in DB', () => {
     })
 
     describe('deletion of blogs', () => {
-        test('success 204 response with valid id', async () => {
+        test('success 204 response with valid id, amount of blogs in db goes down by one', async () => {
+            const blogsInDb = await helper.blogsInDb()
+            await api.delete('/api/blogs/' + blogsInDb[0].id)
+                .expect(204)
+
+            const blogsAfterDelete = await helper.blogsInDb()
+            expect(blogsAfterDelete).toHaveLength(blogsInDb.length - 1)
         })
     })
 
     describe('updating of blogs', () => {
-        test('success with valid data', async () => {
+        test('success with valid data and id, also data is updated', async () => {
+            const blogsInDb = await helper.blogsInDb()
+
+            let updateBlog = {
+                title: 'Games - updated',
+                author: 'Games  McGamerson',
+                url: 'www.games.com/gamegame',
+                likes: 29,
+                id: blogsInDb[0].id
+            }
+
+            await api
+                .put('/api/blogs/' + blogsInDb[0].id)
+                .send(updateBlog)
+                .expect(200)
+
+            const updatedBlogsInDb = await helper.blogsInDb()
+            const updatedBlog = updatedBlogsInDb.filter(blog => blog.id === blogsInDb[0].id)[0]
+            expect(updatedBlog.title).toBe('Games - updated')
+            expect(updatedBlog.likes).toBe(29)
         })
 
-        test('4xx  with invalid data', async () => {
+        test('400 with missing title and/or url but valid id', async () => {
+            const blogsInDb = await helper.blogsInDb()
+
+            let updateBlog = {
+                author: 'Games  McGamerson',
+                url: 'www.games.com/gamegame',
+                likes: 29,
+                id: blogsInDb[0].id
+            }
+
+            await api
+                .put('/api/blogs/' + blogsInDb[0].id)
+                .send(updateBlog)
+                .expect(400)
+
+            updateBlog = {
+                title: 'Games - updated',
+                author: 'Games  McGamerson',
+                likes: 29,
+                id: blogsInDb[0].id
+            }
+
+            await api
+                .put('/api/blogs/' + blogsInDb[0].id)
+                .send(updateBlog)
+                .expect(400)
         })
     })
 })
