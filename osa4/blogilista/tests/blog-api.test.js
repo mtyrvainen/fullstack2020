@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const helper = require('./test_helper')
 
 const api = supertest(app)
@@ -11,6 +12,11 @@ describe('when there is initial data in DB', () => {
     beforeEach(async () => {
         await Blog.deleteMany({})
         await Blog.insertMany(helper.initialBlogs)
+
+        const users = await helper.initializedUsers()
+        await User.deleteMany({})
+        await User.insertMany(users)
+
     })
 
     test('blogs are returned as json', async () => {
@@ -38,8 +44,33 @@ describe('when there is initial data in DB', () => {
         expect(response.body[0].id).toBeDefined()
     })
 
+    test('successful login with correct user data', async () => {
+        const login = {
+            username: 'tester1',
+            password: 'password1'
+        }
+
+        const result = await api
+            .post('/api/login')
+            .send(login)
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        expect(result.body.username).toBe('tester1')
+        expect(result.body.token).toBeDefined()
+    })
+
     describe('adding new blogs', () => {
-        test('success with valid data', async () => {
+        test('new blog is added succesfully when using valid data with a logged in user', async () => {
+            const login = {
+                username: 'tester1',
+                password: 'password1'
+            }
+
+            const loginResult = await api
+                .post('/api/login')
+                .send(login)
+
             const newBlog = {
                 title: 'Created in testing',
                 author: 'Test author',
@@ -49,6 +80,7 @@ describe('when there is initial data in DB', () => {
 
             await api
                 .post('/api/blogs')
+                .set('Authorization', 'bearer ' + loginResult.body.token)
                 .send(newBlog)
                 .expect(200)
                 .expect('Content-Type', /application\/json/)
@@ -61,6 +93,15 @@ describe('when there is initial data in DB', () => {
         })
 
         test('blog\'s likes is set to zero if it\'s not given during creation', async () => {
+            const login = {
+                username: 'tester1',
+                password: 'password1'
+            }
+
+            const loginResult = await api
+                .post('/api/login')
+                .send(login)
+
             const newBlog = {
                 title: 'Created in testing',
                 author: 'Test author',
@@ -69,6 +110,7 @@ describe('when there is initial data in DB', () => {
 
             await api
                 .post('/api/blogs')
+                .set('Authorization', 'bearer ' + loginResult.body.token)
                 .send(newBlog)
                 .expect(200)
                 .expect('Content-Type', /application\/json/)
@@ -79,6 +121,15 @@ describe('when there is initial data in DB', () => {
         })
 
         test('a blog created without title and/or url results in 400 Bad Request response', async () => {
+            const login = {
+                username: 'tester1',
+                password: 'password1'
+            }
+
+            const loginResult = await api
+                .post('/api/login')
+                .send(login)
+
             let newBlog = {
                 title: 'Created in testing',
                 author: 'Test author',
@@ -87,6 +138,7 @@ describe('when there is initial data in DB', () => {
 
             await api
                 .post('/api/blogs')
+                .set('Authorization', 'bearer ' + loginResult.body.token)
                 .send(newBlog)
                 .expect(400)
 
@@ -98,6 +150,7 @@ describe('when there is initial data in DB', () => {
 
             await api
                 .post('/api/blogs')
+                .set('Authorization', 'bearer ' + loginResult.body.token)
                 .send(newBlog)
                 .expect(400)
 
@@ -106,12 +159,52 @@ describe('when there is initial data in DB', () => {
 
     describe('deletion of blogs', () => {
         test('success 204 response with valid id, amount of blogs in db goes down by one', async () => {
-            const blogsInDb = await helper.blogsInDb()
-            await api.delete('/api/blogs/' + blogsInDb[0].id)
+            const login = {
+                username: 'tester1',
+                password: 'password1'
+            }
+
+            const loginResult = await api
+                .post('/api/login')
+                .send(login)
+
+            const blogsInDb_before = await helper.blogsInDb()
+
+            const newBlog = {
+                title: 'Created in testing',
+                author: 'Test author',
+                url: 'www.test.com/test',
+                likes: 9
+            }
+
+            const addedBlog = await api
+                .post('/api/blogs')
+                .set('Authorization', 'bearer ' + loginResult.body.token)
+                .send(newBlog)
+                .expect(200)
+                .expect('Content-Type', /application\/json/)
+
+            const blogsInDb_after = await helper.blogsInDb()
+            expect(blogsInDb_after).toHaveLength(blogsInDb_before.length + 1)
+
+            await api.delete('/api/blogs/' + addedBlog.body.id)
+                .set('Authorization', 'bearer ' + loginResult.body.token)
                 .expect(204)
 
             const blogsAfterDelete = await helper.blogsInDb()
-            expect(blogsAfterDelete).toHaveLength(blogsInDb.length - 1)
+            expect(blogsAfterDelete).toHaveLength(blogsInDb_before.length)
+        })
+
+        test('failed 401 when deleting a blog if no token is attached', async () => {
+            const blogsInDb = await helper.blogsInDb()
+
+            const result = await api.delete('/api/blogs/' + blogsInDb[0].id)
+                .expect(401)
+
+            expect(result.body.error).toContain('invalid or missing token')
+
+            const blogsAfterDelete = await helper.blogsInDb()
+            expect(blogsAfterDelete).toHaveLength(blogsInDb.length)
         })
     })
 
