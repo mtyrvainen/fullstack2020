@@ -16,16 +16,24 @@ const Togglable = React.forwardRef((props, ref) => {
         }
     })
 
+    const blogElement = (showCancel) => {
+        if (showCancel) {
+            return (
+                <button onClick={toggleVisibility}>Cancel</button>
+            )
+        } 
+    } 
+
     return (
-        <div>
+        <>
             <div style={hideWhenVisible}>
-                <button onClick={toggleVisibility}>{props.buttonLabel}</button>
+                {props.tempText}<button onClick={toggleVisibility}>{props.buttonLabel}</button>
             </div>
             <div style={showWhenVisible}>
-                {props.children}
-                <button onClick={toggleVisibility}>Cancel</button>
+                {props.children} {blogElement(props.showCancel)}
             </div>
-        </div>
+        </>
+        
     )
 })
 

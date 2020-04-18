@@ -30,6 +30,7 @@ const App = () => {
       const user = JSON.parse(blogUserJSON)
       setUser(user)
       blogService.setToken(user.token)
+      console.log('user:', user)
     }
   }, [])
 
@@ -44,21 +45,49 @@ const App = () => {
   const createBlog = async (newBlog) => {
     try {
       const res = await blogService.create(newBlog)
-      console.log('blogFormRef:', blogFormRef)
       blogFormRef.current.toggleVisibility()
-      
       displayNotification(`New blog "${newBlog.title}" by ${newBlog.author} added`, 'notification')
-      setBlogs(blogs.concat(res))
+      
+      const blogWithUser = { ...res, user: { username: user.username, name: user.name } }
+      setBlogs(blogs.concat(blogWithUser))
+      
       return true
     } catch (exception) {
-      console.log(exception)
-      displayNotification('Error: Both title and url are required', 'error')  
+      displayNotification('Error: Both title and url are required', 'error')
+      return false
     }
+  }
+
+  const updateBlog = async (blog) => {
+    const updatedBlog = {
+      title: blog.title,
+      author: blog.author,
+      url: blog.url,
+      likes: blog.likes + 1,
+      id: blog.id
+    }
+
+    try {
+      const res = await blogService.update(updatedBlog)
+      console.log('update result:', res)
+
+      let currentBlogs = [ ...blogs ]  
+      console.log(currentBlogs)
+      let index = currentBlogs.findIndex(b => b.id === res.id)
+      console.log('index:', index)
+      currentBlogs[index] = res
+
+      setBlogs(currentBlogs)
+    } catch {
+      displayNotification('Error: Both title and url are required', 'error')
+    }
+
+    
+
   }
 
   const handleLogin = async (event) => {
     event.preventDefault()
-    console.log('loggin in:', username, password)
     try {
       if (username && password) {
         const user = await loginService.login({ username, password })
@@ -106,9 +135,9 @@ const App = () => {
   }
 
   const blogForm = () => (
-    <Togglable buttonLabel="New blog listing" ref={blogFormRef}>
+    <Togglable buttonLabel="New blog listing" showCancel="true" ref={blogFormRef}>
         <BlogForm createBlog={createBlog} />
-      </Togglable>
+    </Togglable>
   )
   
   return (
@@ -124,7 +153,7 @@ const App = () => {
       }
       <div>
         {blogs.map(blog =>
-          <Blog key={blog.id} blog={blog} />
+          <Blog key={blog.id} blog={blog} updateBlog={updateBlog}/>
         )}
       </div>
     </div>
