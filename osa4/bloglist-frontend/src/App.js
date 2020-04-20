@@ -69,21 +69,33 @@ const App = () => {
 
     try {
       const res = await blogService.update(updatedBlog)
-      console.log('update result:', res)
 
       let currentBlogs = [ ...blogs ]  
-      console.log(currentBlogs)
       let index = currentBlogs.findIndex(b => b.id === res.id)
-      console.log('index:', index)
       currentBlogs[index] = res
 
       setBlogs(currentBlogs)
-    } catch {
+      displayNotification(`Blog "${res.title}" updated +1 like`, 'notification')
+    } catch (exception) {
       displayNotification('Error: Both title and url are required', 'error')
     }
+  }
 
+  const removeBlog = async (removeBlog) => {
+    console.log('Poistetaan blogi:', removeBlog.id, removeBlog.title)
     
+    if (!window.confirm(`Remove blog "${removeBlog.title}" by ${removeBlog.author}?`)) {
+      return
+    }
 
+    try {
+        await blogService.remove(removeBlog)
+
+        setBlogs(blogs.filter(blog => blog.id !== removeBlog.id))
+        displayNotification(`Blog "${removeBlog.title}" removed`, 'notification')
+    } catch (exception) {
+        displayNotification('Error: removing blog', 'error')
+    }
   }
 
   const handleLogin = async (event) => {
@@ -152,8 +164,8 @@ const App = () => {
           </div>
       }
       <div>
-        {blogs.map(blog =>
-          <Blog key={blog.id} blog={blog} updateBlog={updateBlog}/>
+        {blogs.sort((blog1, blog2) => blog2.likes - blog1.likes).map(blog =>
+          <Blog key={blog.id} blog={blog} updateBlog={updateBlog} removeBlog={removeBlog} loggedUser={user.username} />
         )}
       </div>
     </div>
