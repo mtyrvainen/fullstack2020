@@ -15,7 +15,7 @@ const App = () => {
   const [notificationType, setNotificationType] = useState('')
   const [notificationText, setNotificationText] = useState('')
   const [loginVisible, setLoginVisible] = useState(false)
-  
+
   const blogFormRef = React.createRef()
 
   useEffect(() => {
@@ -35,22 +35,22 @@ const App = () => {
   }, [])
 
   const displayNotification = (text, type) => {
-		setNotificationType(type)
-		setNotificationText(text)
-		setTimeout( () => {
-			setNotificationText(null)
-		}, 5000)
+    setNotificationText(text)
+    setNotificationType(type)
+    setTimeout( () => {
+      setNotificationText(null)
+    }, 5000)
   }
-  
+
   const createBlog = async (newBlog) => {
     try {
       const res = await blogService.create(newBlog)
       blogFormRef.current.toggleVisibility()
       displayNotification(`New blog "${newBlog.title}" by ${newBlog.author} added`, 'notification')
-      
+
       const blogWithUser = { ...res, user: { username: user.username, name: user.name } }
       setBlogs(blogs.concat(blogWithUser))
-      
+
       return true
     } catch (exception) {
       displayNotification('Error: Both title and url are required', 'error')
@@ -70,7 +70,7 @@ const App = () => {
     try {
       const res = await blogService.update(updatedBlog)
 
-      let currentBlogs = [ ...blogs ]  
+      let currentBlogs = [ ...blogs ]
       let index = currentBlogs.findIndex(b => b.id === res.id)
       currentBlogs[index] = res
 
@@ -83,18 +83,18 @@ const App = () => {
 
   const removeBlog = async (removeBlog) => {
     console.log('Poistetaan blogi:', removeBlog.id, removeBlog.title)
-    
+
     if (!window.confirm(`Remove blog "${removeBlog.title}" by ${removeBlog.author}?`)) {
       return
     }
 
     try {
-        await blogService.remove(removeBlog)
+      await blogService.remove(removeBlog)
 
-        setBlogs(blogs.filter(blog => blog.id !== removeBlog.id))
-        displayNotification(`Blog "${removeBlog.title}" removed`, 'notification')
+      setBlogs(blogs.filter(blog => blog.id !== removeBlog.id))
+      displayNotification(`Blog "${removeBlog.title}" removed`, 'notification')
     } catch (exception) {
-        displayNotification('Error: removing blog', 'error')
+      displayNotification('Error: removing blog', 'error')
     }
   }
 
@@ -103,12 +103,13 @@ const App = () => {
     try {
       if (username && password) {
         const user = await loginService.login({ username, password })
-        
+
         window.localStorage.setItem('blogUser', JSON.stringify(user))
         blogService.setToken(user.token)
         setUser(user)
         setUsername('')
         setPassword('')
+        setLoginVisible(false)
       } else {
         displayNotification('Error: Enter username and password', 'error')
       }
@@ -117,13 +118,13 @@ const App = () => {
     }
   }
 
-  const handleLogout = (event) => {
+  const handleLogout = () => {
     setUser(null)
     window.localStorage.clear()
     blogService.setToken(null)
   }
 
-  const loginForm = () => {
+  const showLoginForm = () => {
     const hideWhenVisible = { display: loginVisible ? 'none' : '' }
     const showWhenVisible = { display: loginVisible ? '' : 'none' }
 
@@ -133,7 +134,7 @@ const App = () => {
           <button onClick={() => setLoginVisible(true)}>Log in</button>
         </div>
         <div style={showWhenVisible}>
-          <LoginForm 
+          <LoginForm
             username={username}
             password={password}
             handleUsernameChange={({ target }) => setUsername(target.value)}
@@ -146,26 +147,26 @@ const App = () => {
     )
   }
 
-  const blogForm = () => (
-    <Togglable buttonLabel="New blog listing" showCancel="true" ref={blogFormRef}>
-        <BlogForm createBlog={createBlog} />
+  const showBlogForm = () => (
+    <Togglable buttonLabel="New blog listing" showCancel={true} ref={blogFormRef}>
+      <BlogForm createBlog={createBlog} />
     </Togglable>
   )
-  
+
   return (
     <div>
       <h2>Blogs</h2>
-      <Notification text={notificationText} type={notificationType} />
+      {notificationText && <Notification text={notificationText} type={notificationType} />}
       {user === null
-        ? loginForm()
+        ? showLoginForm()
         : <div>
           <p>Welcome {user.name} <button onClick={() => handleLogout()}>Logout</button></p>
-            {blogForm()}    
-          </div>
+          {showBlogForm()}
+        </div>
       }
       <div>
         {blogs.sort((blog1, blog2) => blog2.likes - blog1.likes).map(blog =>
-          <Blog key={blog.id} blog={blog} updateBlog={updateBlog} removeBlog={removeBlog} loggedUser={user.username} />
+          <Blog key={blog.id} blog={blog} updateBlog={updateBlog} removeBlog={removeBlog} loggedUser={user} />
         )}
       </div>
     </div>
