@@ -30,7 +30,6 @@ const App = () => {
       const user = JSON.parse(blogUserJSON)
       setUser(user)
       blogService.setToken(user.token)
-      console.log('user:', user)
     }
   }, [])
 
@@ -82,8 +81,6 @@ const App = () => {
   }
 
   const removeBlog = async (removeBlog) => {
-    console.log('Poistetaan blogi:', removeBlog.id, removeBlog.title)
-
     if (!window.confirm(`Remove blog "${removeBlog.title}" by ${removeBlog.author}?`)) {
       return
     }
