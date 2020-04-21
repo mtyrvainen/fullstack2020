@@ -58,7 +58,7 @@ const App = () => {
     }
   }
 
-  const updateBlog = async (blog) => {
+  const handleLikes = async (blog) => {
     const updatedBlog = {
       title: blog.title,
       author: blog.author,
@@ -166,7 +166,7 @@ const App = () => {
       }
       <div>
         {blogs.sort((blog1, blog2) => blog2.likes - blog1.likes).map(blog =>
-          <Blog key={blog.id} blog={blog} updateBlog={updateBlog} removeBlog={removeBlog} loggedUser={user} />
+          <Blog key={blog.id} blog={blog} handleLikes={handleLikes} removeBlog={removeBlog} loggedUser={user} />
         )}
       </div>
     </div>
