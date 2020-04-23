@@ -4,14 +4,12 @@ import AnecdoteList from './components/AnecdoteList'
 import Notification from './components/Notification'
 import Filter from './components/Filter'
 import { initializeAnecdotes } from './reducers/anecdoteReducer'
-import { useDispatch } from 'react-redux'
+import { connect } from 'react-redux'
 
-const App = () => {
-  const dispatch = useDispatch()
-
+const App = (props) => {
   useEffect(() => {
-    dispatch(initializeAnecdotes())  
-  }, [dispatch])
+    props.initializeAnecdotes()
+  }, [props])
 
   return (
     <div>
@@ -24,4 +22,13 @@ const App = () => {
   )
 }
 
-export default App
+const mapDispatchToProps = {
+  initializeAnecdotes
+}
+
+const ConnectedApp = connect(
+  null,
+  mapDispatchToProps
+)(App)
+
+export default ConnectedApp
