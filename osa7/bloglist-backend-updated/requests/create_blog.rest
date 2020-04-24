@@ -1,0 +1,10 @@
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImF1dGhvciIsImlkIjoiNWU5OWVjNzUwNmE1NzExNjA4MDMwY2VkIiwiaWF0IjoxNTg3MTQ2NDU5fQ.RAqG-L1iHtF2v-FHcusRInn0Ntvr7tvFUIc_4miC5VY
+
+{
+	"title": "Uusi 2 authorisoitu ja tokenoitu blogi",
+	"author": "Jokuvaan",
+	"url": "www.new.com",
+	"likes": 0
+}
