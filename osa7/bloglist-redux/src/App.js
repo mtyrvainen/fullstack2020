@@ -1,125 +1,59 @@
-import React, { useState, useEffect } from 'react'
-import Blog from './components/Blog'
+import React, { useEffect } from 'react'
 import Togglable from './components/Togglable'
 import LoginForm from './components/LoginForm'
 import Notification from './components/Notification'
 import BlogForm from './components/BlogForm'
-import blogService from './services/blogs'
-import loginService from './services/login'
+import BlogList from './components/BlogList'
+import Blog from './components/Blog'
+import Users from './components/Users'
+import User from './components/User'
+import {
+  BrowserRouter as Router, Switch, Route, Link
+} from 'react-router-dom'
+
 import { useDispatch, useSelector } from 'react-redux'
 import { setNotification } from './reducers/notificationReducer'
-import { initializeBlogs, likeId, addBlog, removeBlog } from './reducers/blogReducer'
+import { initializeBlogs, addBlog } from './reducers/blogReducer'
+import { logout, initializeUser } from './reducers/loginReducer'
+import { initializeUsers } from './reducers/userReducer'
 
 const App = () => {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [user, setUser] = useState(null)
-  const [loginVisible, setLoginVisible] = useState(false)
   const dispatch = useDispatch()
 
   useEffect(() => {
     dispatch(initializeBlogs())
+    dispatch(initializeUser())
+    dispatch(initializeUsers())
   }, [dispatch])
 
   const notification = useSelector(state => state.notification)
+  const user = useSelector(state => state.user.user)
+  const users = useSelector(state => state.users)
   const blogs = useSelector(state => state.blogs)
   const blogFormRef = React.createRef()
 
-  useEffect(() => {
-    const blogUserJSON = window.localStorage.getItem('blogUser')
-    if (blogUserJSON) {
-      const user = JSON.parse(blogUserJSON)
-      setUser(user)
-      blogService.setToken(user.token)
-    }
-  }, [])
-
-  const displayNotification = (text, type) => {
-    dispatch(setNotification(text, type))
+  const handleLogout = () => {
+    dispatch(logout())
   }
 
   const createBlog = async (newBlog) => {
     try {
-      dispatch(addBlog(newBlog))
       blogFormRef.current.toggleVisibility()
-      displayNotification(`New blog "${newBlog.title}" by ${newBlog.author} added`, 'notification')
+      await dispatch(addBlog(newBlog))
+      dispatch(setNotification(`New blog "${newBlog.title}" by ${newBlog.author} added`, 'notification'))
       return true
     } catch (exception) {
-      displayNotification('Error: Both title and url are required', 'error')
+      console.log('exception:', exception)
+      dispatch(setNotification('Error: Both title and url are required', 'error'))
       return false
     }
   }
 
-  const handleLikes = async (blog) => {
-    try {
-      dispatch(likeId(blog.id))
-      displayNotification(`Blog "${blog.title}" updated +1 like`, 'notification')
-    } catch (exception) {
-      displayNotification('Error: couldn\'t register like', 'error')
-    }
-  }
-
-  const deleteBlog = async (blogToRemove) => {
-    if (!window.confirm(`Remove blog "${blogToRemove.title}" by ${blogToRemove.author}?`)) {
-      return
-    }
-
-    try {
-      dispatch(removeBlog(blogToRemove))
-      displayNotification(`Blog "${blogToRemove.title}" removed`, 'notification')
-    } catch (exception) {
-      displayNotification('Error: removing blog', 'error')
-    }
-  }
-
-  const handleLogin = async (event) => {
-    event.preventDefault()
-    try {
-      if (username && password) {
-        const user = await loginService.login({ username, password })
-
-        window.localStorage.setItem('blogUser', JSON.stringify(user))
-        blogService.setToken(user.token)
-        setUser(user)
-        setUsername('')
-        setPassword('')
-        setLoginVisible(false)
-      } else {
-        displayNotification('Error: Enter username and password', 'error')
-      }
-    } catch (exception) {
-      displayNotification('Error: Wrong password or username', 'error')
-    }
-  }
-
-  const handleLogout = () => {
-    setUser(null)
-    window.localStorage.clear()
-    blogService.setToken(null)
-  }
-
-  const showLoginForm = () => {
-    const hideWhenVisible = { display: loginVisible ? 'none' : '' }
-    const showWhenVisible = { display: loginVisible ? '' : 'none' }
-
-    return (
-      <div>
-        <div style={hideWhenVisible}>
-          <button onClick={() => setLoginVisible(true)}>Log in</button>
-        </div>
-        <div style={showWhenVisible}>
-          <LoginForm
-            username={username}
-            password={password}
-            handleUsernameChange={({ target }) => setUsername(target.value)}
-            handlePasswordChange={({ target }) => setPassword(target.value)}
-            handleSubmit={handleLogin}
-          />
-          <button onClick={() => setLoginVisible(false)}>Cancel</button>
-        </div>
-      </div>
-    )
-  }
+  const showLoginForm = () => (
+    <Togglable buttonLabel="Log in" showCancel={true}>
+      <LoginForm />
+    </Togglable>
+  )
 
   const showBlogForm = () => (
     <Togglable buttonLabel="New blog listing" showCancel={true} ref={blogFormRef}>
@@ -127,23 +61,43 @@ const App = () => {
     </Togglable>
   )
 
+  const showLoggedUser = () => (
+    <div><p>{user.name} ({user.username}) logged in<button onClick={() => handleLogout()}>Logout</button></p></div>
+  )
+
   return (
-    <div>
-      <h2>Blogs</h2>
-      <Notification text={notification.notificationText} type={notification.notificationType} />
-      {user === null
-        ? showLoginForm()
-        : <div>
-          <p>Welcome {user.name} <button onClick={() => handleLogout()}>Logout</button></p>
-          {showBlogForm()}
-        </div>
-      }
+    <Router>
       <div>
-        {blogs.sort((blog1, blog2) => blog2.likes - blog1.likes).map(blog =>
-          <Blog key={blog.id} blog={blog} handleLikes={handleLikes} removeBlog={deleteBlog} loggedUser={user} />
-        )}
+        <h2>Blogs</h2>
+        <Notification text={notification.notificationText} type={notification.notificationType} />
+        <Link to="/">Blogs</Link>
+        <Link to="/users">Users</Link>
+        {user === null
+          ? showLoginForm()
+          : showLoggedUser()
+        }
+        <Switch>
+          <Route path="/blogs/:id">
+            <Blog blogs={blogs} />
+          </Route>
+          <Route path="/users/:id">
+            <User users={users} />
+          </Route>
+          <Route path="/users">
+            {users ? <Users users={users} /> : null}
+          </Route>
+          <Route path="/">
+            {user !== null
+              ? showBlogForm()
+              : <div>Kirjaudu niin näet lomakkeen</div>
+            }
+            <div>
+              <BlogList />
+            </div>
+          </Route>
+        </Switch>
       </div>
-    </div>
+    </Router>
   )
 }
 

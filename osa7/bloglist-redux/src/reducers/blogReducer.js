@@ -26,7 +26,7 @@ const blogReducer = (state = [], action) => {
 export const likeId = (id) => {
   return async dispatch => {
     const updatedBlog = await blogService.updateLikes(id)
-    dispatch({
+    await dispatch({
       type: 'LIKE',
       id: updatedBlog.id
     })
@@ -36,7 +36,7 @@ export const likeId = (id) => {
 export const addBlog = (data) => {
   return async dispatch => {
     const res = await blogService.add(data)
-    dispatch({
+    await dispatch({
       type: 'NEW_BLOG',
       data: res
     })
@@ -46,7 +46,7 @@ export const addBlog = (data) => {
 export const initializeBlogs = () => {
   return async dispatch => {
     const blogs = await blogService.getAll()
-    dispatch({
+    await dispatch({
       type: 'INIT_BLOGS',
       data: blogs
     })
@@ -56,7 +56,7 @@ export const initializeBlogs = () => {
 export const removeBlog = (blog) => {
   return async dispatch => {
     await blogService.remove(blog)
-    dispatch({
+    await dispatch({
       type: 'REMOVE_BLOG',
       id: blog.id
     })
