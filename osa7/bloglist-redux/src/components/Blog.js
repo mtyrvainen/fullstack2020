@@ -1,14 +1,15 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { useParams, useHistory } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { setNotification } from '../reducers/notificationReducer'
-import { likeId, removeBlog } from '../reducers/blogReducer'
+import { likeId, removeBlog, addComment } from '../reducers/blogReducer'
 
 const Blog = ({ blogs }) => {
   const dispatch = useDispatch()
   const history = useHistory()
+  const [comment, setComment] = useState('')
 
   const user = useSelector(state => state.user.user)
   const id = useParams().id
@@ -27,13 +28,46 @@ const Blog = ({ blogs }) => {
     }
   }
 
-  const displayRemoveButton = (blog) => {
-    if (user && blog.user.username === user.username) {
+  const postComment = async (event) => {
+    event.preventDefault()
+    console.log('Nyt pitis lisätä kommentti')
+
+    const newComment = {
+      id: blogDetail.id,
+      comment: {
+        comment
+      }
+    }
+    console.log('Tämä lisätään', newComment)
+    try {
+      await dispatch(addComment(newComment))
+      console.log('Onnistus!')
+      dispatch(setNotification('New comment added', 'notification'))
+      setComment('')
+    } catch (exception) {
+      console.log('exception:', exception)
+      dispatch(setNotification('Error posting a comment', 'error'))
+    }
+  }
+
+  const displayRemoveButton = () => {
+    if (user && blogDetail.user.username === user.username) {
       return (
-        <div><button id="remove-blog-button" onClick={() => deleteBlog(blog)}>Remove</button></div>
+        <div><button id="remove-blog-button" onClick={() => deleteBlog(blogDetail)}>Remove</button></div>
       )
     }
   }
+
+  const displayComments = () => (
+    <div>
+      <h3>Comments</h3>
+      <form onSubmit={postComment}>
+        <input id="comment" type="text" value={comment} name="comment" onChange={({ target }) => setComment(target.value)} />
+        <button>Post a comment</button>
+      </form>
+      {blogDetail.comments.length > 0 ? <ul>{blogDetail.comments.map((comment, index) => <li key={index} >{comment}</li>)}</ul> : <div><p>No comments yet...</p></div>}
+    </div>
+  )
 
   const deleteBlog = async (blogToRemove) => {
     if (!window.confirm(`Remove blog "${blogToRemove.title}" by ${blogToRemove.author}?`)) {
@@ -51,13 +85,14 @@ const Blog = ({ blogs }) => {
 
   return (
     <div>
-      <h2>{blogDetail.title}</h2>
+      <h2>{blogDetail.title} by {blogDetail.author}</h2>
       <div>
         More info at: <a href={`http://${blogDetail.url}`}>{blogDetail.url}</a><br />
         {blogDetail.likes} likes<button onClick={() => handleLikes(blogDetail)}>Like</button><br />
         added by <Link to={`/users/${blogDetail.user.id}`}>{blogDetail.user.name}</Link><br />
       </div>
-      {displayRemoveButton(blogDetail)}
+      {displayRemoveButton()}
+      {displayComments()}
     </div>
   )
 }

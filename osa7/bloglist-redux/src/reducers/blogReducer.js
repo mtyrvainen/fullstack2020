@@ -3,6 +3,7 @@ import blogService from '../services/blogs'
 const blogReducer = (state = [], action) => {
   let likedBlog
   let updatedBlog
+  let commentedBlog
 
   switch(action.type) {
   case 'LIKE':
@@ -18,6 +19,13 @@ const blogReducer = (state = [], action) => {
     return action.data
   case 'REMOVE_BLOG':
     return state.filter(blog => blog.id !== action.id)
+  case 'ADD_COMMENT':
+    commentedBlog = state.find(blog => blog.id === action.id)
+    updatedBlog = {
+      ...commentedBlog,
+      comments: commentedBlog.comments.concat(action.comment)
+    }
+    return state.map(blog => blog.id !== action.id ? blog : updatedBlog)
   default:
     return state
   }
@@ -59,6 +67,17 @@ export const removeBlog = (blog) => {
     await dispatch({
       type: 'REMOVE_BLOG',
       id: blog.id
+    })
+  }
+}
+
+export const addComment = (data) => {
+  return async dispatch => {
+    await blogService.addComment(data.id, data.comment)
+    await dispatch({
+      type: 'ADD_COMMENT',
+      id: data.id,
+      comment: data.comment.comment
     })
   }
 }
