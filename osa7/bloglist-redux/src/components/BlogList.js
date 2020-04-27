@@ -1,8 +1,12 @@
 import React from 'react'
 import Blog from './BlogElement'
+import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { likeId, removeBlog } from '../reducers/blogReducer'
 import { setNotification } from '../reducers/notificationReducer'
+
+//Material UI imports:
+import { Box, Table, TableBody, TableHead, TableCell, TableContainer, TableRow, Typography } from '@material-ui/core'
 
 const BlogList = () => {
   const dispatch = useDispatch()
@@ -32,11 +36,31 @@ const BlogList = () => {
   }
 
   return (
-    <div>
-      {blogs.sort((blog1, blog2) => blog2.likes - blog1.likes).map(blog =>
-        <Blog key={blog.id} blog={blog} handleLikes={handleLikes} removeBlog={deleteBlog} loggedUser={user} />
-      )}
-    </div>
+    <Box component="span" display="block" bgcolor="background.paper" p={2}>
+      <Typography variant="h4">Blogs</Typography>
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Blog Title</TableCell>
+              <TableCell>Author</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {blogs.sort((blog1, blog2) => blog2.likes - blog1.likes).map(blog =>
+              <TableRow key={blog.id}>
+                <TableCell>
+                  <Blog key={blog.id} blog={blog} handleLikes={handleLikes} removeBlog={deleteBlog} loggedUser={user} />
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body1" component={Link} to={`/users/${blog.user.id}`}>{blog.author}</Typography>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   )
 }
 

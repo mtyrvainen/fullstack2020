@@ -1,6 +1,9 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 
+//Material UI
+import { Box, TextField, Button, Typography } from '@material-ui/core'
+
 const BlogForm = ({ createBlog }) => {
   const [blogTitle, setBlogTitle] = useState('')
   const [blogAuthor, setBlogAuthor] = useState('')
@@ -24,18 +27,20 @@ const BlogForm = ({ createBlog }) => {
 
   return (
     <div>
-      <h2>Create a new blog listing</h2>
+      <Typography variant="h5">Create a new blog listing</Typography>
       <form onSubmit={addBlog}>
-        <div>
-            Title: <input id="title" type="text" value={blogTitle} name="title" onChange={({ target }) => setBlogTitle(target.value)} />
-        </div>
-        <div>
-            Author: <input id="author" type="text" value={blogAuthor} name="author" onChange={({ target }) => setBlogAuthor(target.value)} />
-        </div>
-        <div>
-            Url: <input id="url" type="text" value={blogUrl} name="url" onChange={({ target }) => setBlogUrl(target.value)} />
-        </div>
-        <button id="add-blog" type="submit">Create</button>
+        <Box component="span" display="block" bgcolor="background.paper" pb={2}>
+          <div>
+            <TextField label="Title" id="title" type="text" value={blogTitle} name="title" onChange={({ target }) => setBlogTitle(target.value)} />
+          </div>
+          <div>
+            <TextField label="Author" id="author" type="text" value={blogAuthor} name="author" onChange={({ target }) => setBlogAuthor(target.value)} />
+          </div>
+          <div>
+            <TextField label="URL" id="url" type="text" value={blogUrl} name="url" onChange={({ target }) => setBlogUrl(target.value)} />
+          </div>
+        </Box>
+        <Button variant="outlined" color="primary" id="add-blog" type="submit">Create</Button>
       </form>
     </div>
   )

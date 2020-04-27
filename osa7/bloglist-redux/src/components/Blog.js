@@ -6,6 +6,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import { setNotification } from '../reducers/notificationReducer'
 import { likeId, removeBlog, addComment } from '../reducers/blogReducer'
 
+//Material UI
+import { TextField, Button, Typography, Box } from '@material-ui/core'
+
 const Blog = ({ blogs }) => {
   const dispatch = useDispatch()
   const history = useHistory()
@@ -28,9 +31,12 @@ const Blog = ({ blogs }) => {
     }
   }
 
+  const handleCommentChange = (event) => {
+    setComment(event)
+  }
+
   const postComment = async (event) => {
     event.preventDefault()
-    console.log('Nyt pitis lisätä kommentti')
 
     const newComment = {
       id: blogDetail.id,
@@ -38,14 +44,11 @@ const Blog = ({ blogs }) => {
         comment
       }
     }
-    console.log('Tämä lisätään', newComment)
     try {
       await dispatch(addComment(newComment))
-      console.log('Onnistus!')
       dispatch(setNotification('New comment added', 'notification'))
       setComment('')
     } catch (exception) {
-      console.log('exception:', exception)
       dispatch(setNotification('Error posting a comment', 'error'))
     }
   }
@@ -58,15 +61,18 @@ const Blog = ({ blogs }) => {
     }
   }
 
-  const displayComments = () => (
-    <div>
-      <h3>Comments</h3>
+  const displayComments = (comment) => (
+    <Box component="span" display="block" bgcolor="background.paper" p={2}>
+      <Typography variant="h5">Comments</Typography>
+      {blogDetail.comments.length > 0 ? <ul>{blogDetail.comments.map((comment, index) => <li key={index} ><Typography variant="body1">{comment}</Typography></li>)}</ul> : <div><p>No comments yet...</p></div>}
       <form onSubmit={postComment}>
-        <input id="comment" type="text" value={comment} name="comment" onChange={({ target }) => setComment(target.value)} />
-        <button>Post a comment</button>
+        <TextField label="Leave a comment..." id="comment" type="text" value={comment} name="comment" onChange={({ target }) => handleCommentChange(target.value)} />
+        {comment === ''
+          ? <Button variant="contained" color="primary" size="small" disabled>Post a comment</Button>
+          : <Button variant="contained" color="primary" size="small" type="submit">Post a comment</Button>
+        }
       </form>
-      {blogDetail.comments.length > 0 ? <ul>{blogDetail.comments.map((comment, index) => <li key={index} >{comment}</li>)}</ul> : <div><p>No comments yet...</p></div>}
-    </div>
+    </Box>
   )
 
   const deleteBlog = async (blogToRemove) => {
@@ -85,14 +91,17 @@ const Blog = ({ blogs }) => {
 
   return (
     <div>
-      <h2>{blogDetail.title} by {blogDetail.author}</h2>
-      <div>
-        More info at: <a href={`http://${blogDetail.url}`}>{blogDetail.url}</a><br />
-        {blogDetail.likes} likes<button onClick={() => handleLikes(blogDetail)}>Like</button><br />
-        added by <Link to={`/users/${blogDetail.user.id}`}>{blogDetail.user.name}</Link><br />
-      </div>
+      <Box component="span" display="block" bgcolor="background.paper" p={2}>
+        <Typography p={1} variant="h5">&quot;{blogDetail.title}&quot; by {blogDetail.author}</Typography>
+        <Box component="span" display="block" bgcolor="background.paper" p={1}>
+          <Typography variant="body1">More info at: <a href={`http://${blogDetail.url}`}>{blogDetail.url}</a></Typography>
+          <Typography component="div" display="inline" variant="body1">{blogDetail.likes} likes</Typography>
+          <Button component="div" display="inline" size="small" variant="outlined" color="default" onClick={() => handleLikes(blogDetail)}>Like</Button>
+          <Typography variant="body1">added by <Link to={`/users/${blogDetail.user.id}`}>{blogDetail.user.name}</Link></Typography>
+        </Box>
+      </Box>
       {displayRemoveButton()}
-      {displayComments()}
+      {displayComments(comment)}
     </div>
   )
 }

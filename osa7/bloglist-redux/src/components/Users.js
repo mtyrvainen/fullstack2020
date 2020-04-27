@@ -1,14 +1,17 @@
 import React from 'react'
 import UserTable from './UserTable'
 
+//Material UI
+import { Box, Typography } from '@material-ui/core'
+
 const Users = ({ users }) => {
 
   console.log('users from users', users)
   return (
-    <div>
-      <h2>Users</h2>
+    <Box component="span" display="block" bgcolor="background.paper" p={2}>
+      <Typography variant="h4">Users</Typography>
       {users ? <UserTable users={users}/> : null}
-    </div>
+    </Box>
   )
 }
 

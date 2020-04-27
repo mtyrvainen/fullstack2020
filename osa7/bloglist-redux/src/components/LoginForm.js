@@ -3,6 +3,9 @@ import { useDispatch } from 'react-redux'
 import { setNotification } from '../reducers/notificationReducer'
 import { login } from '../reducers/loginReducer'
 
+//Material UI
+import { Box, TextField, Button, Typography } from '@material-ui/core'
+
 const LoginForm = () => {
   const dispatch = useDispatch()
 
@@ -24,18 +27,20 @@ const LoginForm = () => {
   }
 
   return (
-    <div>
-      <h2>Login</h2>
+    <Box component="span" display="block" bgcolor="background.paper">
+      <Typography variant="h5">Login</Typography>
       <form onSubmit={handleLogin}>
+        <Box component="span" display="block" bgcolor="background.paper" pb={2}>
+          <div>
+            <TextField label="Username" id="username" type="text" value={username} name="Username" onChange={({ target }) => setUsername(target.value)} />
+          </div>
+          <TextField label="Password" id="password" type="password" value={password} name="Password" onChange={({ target }) => setPassword(target.value)} />
+        </Box>
         <div>
-          Username <input id="username" type="text" value={username} name="Username" onChange={({ target }) => setUsername(target.value)} />
+          <Button variant="contained" color="primary" id="login-button" type="submit">Log in</Button>
         </div>
-        <div>
-          Password <input id="password" type="password" value={password} name="Password" onChange={({ target }) => setPassword(target.value)} />
-        </div>
-        <button id="login-button" type="submit">Login</button>
       </form>
-    </div>
+    </Box>
   )
 }
 

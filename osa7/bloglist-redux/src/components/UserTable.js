@@ -1,27 +1,28 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-const UserTable = ({ users }) => {
-  console.log('users from usertable:', users)
+//Material UI
+import { Table, TableBody, TableHead, TableCell, TableContainer, TableRow, Typography } from '@material-ui/core'
 
+const UserTable = ({ users }) => {
   return (
-    <div>
-      <table>
-        <thead>
-          <tr>
-            <th></th>
-            <th>Blogs created</th>
-          </tr>
-        </thead>
-        <tbody>
+    <TableContainer>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>User</TableCell>
+            <TableCell>Blogs created</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
           {users.map(user =>
-            <tr key={user.id}>
-              <td><Link to={`/users/${user.id}`}>{user.name}</Link></td>
-              <td>{user.blogs.length}</td>
-            </tr>)}
-        </tbody>
-      </table>
-    </div>
+            <TableRow key={user.id}>
+              <TableCell><Typography variant="body1" component={Link} to={`/users/${user.id}`}>{user.name}</Typography></TableCell>
+              <TableCell><Typography variant="body1">{user.blogs.length}</Typography></TableCell>
+            </TableRow>)}
+        </TableBody>
+      </Table>
+    </TableContainer>
   )
 }
 

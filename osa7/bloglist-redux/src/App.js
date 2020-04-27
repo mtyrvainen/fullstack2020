@@ -11,6 +11,10 @@ import {
   BrowserRouter as Router, Switch, Route, Link
 } from 'react-router-dom'
 
+//Material UI imports:
+import { makeStyles } from '@material-ui/core/styles'
+import { Box, Container, AppBar, Toolbar, Button, Typography } from '@material-ui/core'
+
 import { useDispatch, useSelector } from 'react-redux'
 import { setNotification } from './reducers/notificationReducer'
 import { initializeBlogs, addBlog } from './reducers/blogReducer'
@@ -34,6 +38,7 @@ const App = () => {
 
   const handleLogout = () => {
     dispatch(logout())
+    dispatch(setNotification('Logged out', 'notification'))
   }
 
   const createBlog = async (newBlog) => {
@@ -50,54 +55,86 @@ const App = () => {
   }
 
   const showLoginForm = () => (
-    <Togglable buttonLabel="Log in" showCancel={true}>
-      <LoginForm />
-    </Togglable>
+    <Box component="span" display="block" bgcolor="background.paper" p={2}>
+      <Togglable buttonLabel="Log in" showCancel={true}>
+        <LoginForm />
+      </Togglable>
+    </Box>
   )
 
   const showBlogForm = () => (
-    <Togglable buttonLabel="New blog listing" showCancel={true} ref={blogFormRef}>
-      <BlogForm createBlog={createBlog} />
-    </Togglable>
+    <Box component="span" display="block" bgcolor="background.paper" p={2}>
+      <Togglable buttonLabel="Add blog" showCancel={true} ref={blogFormRef}>
+        <BlogForm createBlog={createBlog} />
+      </Togglable>
+    </Box>
   )
 
-  const showLoggedUser = () => (
-    <div><p>{user.name} ({user.username}) logged in<button onClick={() => handleLogout()}>Logout</button></p></div>
-  )
+
+
+  const useStyles = makeStyles((theme) => ({
+    root: {
+      flexGrow: 1,
+    },
+    menuButton: {
+      marginRight: theme.spacing(2),
+    },
+    title: {
+      flexGrow: 1,
+    },
+  }))
+
+  const classes = useStyles()
 
   return (
-    <Router>
-      <div>
-        <h2>Blogs</h2>
-        <Notification text={notification.notificationText} type={notification.notificationType} />
-        <Link to="/">Blogs</Link>
-        <Link to="/users">Users</Link>
-        {user === null
-          ? showLoginForm()
-          : showLoggedUser()
-        }
-        <Switch>
-          <Route path="/blogs/:id">
-            <Blog blogs={blogs} />
-          </Route>
-          <Route path="/users/:id">
-            <User users={users} />
-          </Route>
-          <Route path="/users">
-            {users ? <Users users={users} /> : null}
-          </Route>
-          <Route path="/">
-            {user !== null
-              ? showBlogForm()
-              : <div>Kirjaudu niin näet lomakkeen</div>
-            }
-            <div>
-              <BlogList />
-            </div>
-          </Route>
-        </Switch>
-      </div>
-    </Router>
+    <Container>
+      <Router>
+        <div>
+          <Typography variant="h2">Project Blogs Redux</Typography>
+          <div className={classes.root}>
+            <AppBar color="primary" position="static">
+              <Toolbar>
+                <Button edge="start" color="inherit" component={Link} to="/">Blogs</Button>
+                <Button color="inherit" component={Link} to="/users">Users</Button>
+                <Typography color="primary" className={classes.title}></Typography>
+                {user !== null
+                  ? <Typography >{user.name} logged in</Typography>
+                  : null
+                }
+                {user !== null
+                  ? <Button size="small" variant="contained" color="secondary" onClick={() => handleLogout()}>Logout</Button>
+                  : null
+                }
+              </Toolbar>
+
+            </AppBar>
+          </div>
+          <Notification text={notification.notificationText} type={notification.notificationType} />
+
+          {!user && showLoginForm()}
+          <Switch>
+            <Route path="/blogs/:id">
+              <Blog blogs={blogs} />
+            </Route>
+            <Route path="/users/:id">
+              <User users={users} />
+            </Route>
+            <Route path="/users">
+              {users ? <Users users={users} /> : null}
+            </Route>
+            <Route path="/">
+              {user !== null
+                ? showBlogForm()
+                : null
+              }
+              <div>
+                <BlogList />
+              </div>
+            </Route>
+          </Switch>
+        </div>
+      </Router>
+    </Container>
   )
 }
 
