@@ -2,5 +2,5 @@ POST http://localhost:3001/api/blogs/5ea4b5f97d5a6d3a74bc7aeb/comments
 Content-Type: application/json
 
 {
-  "comment": "First!"
+  "comment": "2econd!"
 }

@@ -1,0 +1,19 @@
+{
+  "name": "library-backend",
+  "version": "0.0.1",
+  "description": "fullstack2020 part8: GraphQL",
+  "main": "library-backend.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Marko Tyrväinen",
+  "license": "MIT",
+  "dependencies": {
+    "apollo-server": "^2.12.0",
+    "graphql": "^15.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.3"
+  }
+}
