@@ -14,9 +14,12 @@ const NewBook = (props) => {
     refetchQueries: [ { query: ALL_BOOKS }, { query: ALL_AUTHORS } ],
     onError: (error) => {
       if (error.networkError) {
-        showError('400 Bad Request: Please fill all fields')
+        showError('Invalid input, please fill all the fields')
+      } else if (error.graphQLErrors) {
+        console.log('error', error.message)
+        showError(error.message)
       } else {
-        console.log('Error occured', error)
+        console.log('Misc. error', error.message)
       }
     }
   })
@@ -46,7 +49,7 @@ const NewBook = (props) => {
   const submit = async (event) => {
     event.preventDefault()
 
-    console.log('add book...')
+    console.log('add book', title, author, published, genres)
     createBook({ variables: { title, author, published, genres } })
 
     setTitle('')

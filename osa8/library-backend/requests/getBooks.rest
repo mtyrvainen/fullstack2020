@@ -2,5 +2,5 @@ POST http://localhost:4000/graphql
 Content-Type: application/json
 
 {
-	"query": "query { allBooks { title, author } }"
+	"query": "query { allBooks { title, author {name} } }"
 }
