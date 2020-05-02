@@ -4,10 +4,9 @@ import { ALL_AUTHORS, UPDATE_AUTHOR } from '../queries'
 import Select from 'react-select'
 
 
-const Authors = (props) => {
+const Authors = ({ show, token, handleNotification }) => {
   const [name, setName] = useState('')
   const [year, setYear] = useState('')
-  const [errorMessage, setErrorMessage] = useState('')
   const [selectedAuthor, setSelectedAuthor] = useState('')
 
   const result = useQuery(ALL_AUTHORS)
@@ -16,44 +15,23 @@ const Authors = (props) => {
     refetchQueries: [ { query: ALL_AUTHORS } ],
     onError: (error) => {
       if (error.networkError) {
-        showError('Invalid input, please fill all the fields')
+        handleNotification('Invalid input, please fill all the fields')
       } else if (error.graphQLErrors) {
-        console.log('error', error.message)
-        showError(error.message)
+        handleNotification(error.message)
       } else {
         console.log('Misc error', error.message)
       }
     }
   })
 
-  if (!props.show) {
+  if (!show) {
     return null
-  }
-
-  const showError = (message) => {
-    setErrorMessage(message)
-    setTimeout(() => {
-      setErrorMessage(null)
-    }, 10000)
-  }
-
-  const displayError = () => {
-    if ( !errorMessage ) {
-      return null
-    }
-    return (
-      <div style={{ color: 'red' }}>
-        {errorMessage}
-      </div>
-    )
   }
 
   let authors = []
   let options = []
 
-  if (result.loading) {
-    console.log('ladataan...')
-  } else {
+  if (!result.loading) {
     authors = result.data.allAuthors
     options = authors.map(author => {
       return { value: author.name, label: author.name }
@@ -73,6 +51,33 @@ const Authors = (props) => {
   const handleAuthorChange = (selectedOption) => {
     setSelectedAuthor(selectedOption)
     setName(selectedOption.value)
+  }
+
+  const displayEdit = () => {
+    if (!token) {
+      return null
+    }
+
+    return (
+      <div>
+        <h3>Set birthyear</h3>
+        <form onSubmit={submit}>
+          <Select
+            value={selectedAuthor}
+            onChange={handleAuthorChange}
+            options={options} />
+          <div>
+            Born:
+            <input
+              type='number'
+              value={year}
+              onChange={({ target }) => setYear(Number(target.value))}
+            />
+          </div>
+          <button type='submit'>Update author info</button>
+        </form>
+      </div>
+    )
   }
 
   return (
@@ -100,25 +105,7 @@ const Authors = (props) => {
           </tbody>
         </table>
       </div>
-      <div>
-        <h3>Set birthyear</h3>
-        <form onSubmit={submit}>
-          <Select
-            value={selectedAuthor}
-            onChange={handleAuthorChange}
-            options={options} />
-          <div>
-            Born:
-            <input
-              type='number'
-              value={year}
-              onChange={({ target }) => setYear(Number(target.value))}
-            />
-          </div>
-          <button type='submit'>Update author info</button>
-        </form>
-      </div>
-      <div>{displayError()}</div>
+      {displayEdit()}
     </div>
   )
 }

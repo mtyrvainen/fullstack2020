@@ -2,48 +2,29 @@ import React, { useState } from 'react'
 import { useMutation } from '@apollo/client'
 import { CREATE_BOOK, ALL_BOOKS, ALL_AUTHORS } from '../queries'
 
-const NewBook = (props) => {
+const NewBook = ({ show, handleNotification }) => {
   const [title, setTitle] = useState('')
   const [author, setAuhtor] = useState('')
   const [published, setPublished] = useState('')
   const [genre, setGenre] = useState('')
   const [genres, setGenres] = useState([])
-  const [errorMessage, setErrorMessage] = useState('')
 
   const [ createBook ] = useMutation(CREATE_BOOK, {
     refetchQueries: [ { query: ALL_BOOKS }, { query: ALL_AUTHORS } ],
     onError: (error) => {
       if (error.networkError) {
-        showError('Invalid input, please fill all the fields')
+        handleNotification('Invalid input, please fill all the fields')
       } else if (error.graphQLErrors) {
         console.log('error', error.message)
-        showError(error.message)
+        handleNotification(error.message)
       } else {
         console.log('Misc. error', error.message)
       }
     }
   })
 
-  const showError = (message) => {
-    setErrorMessage(message)
-    setTimeout(() => {
-      setErrorMessage(null)
-    }, 10000)
-  }
-
-  if (!props.show) {
+  if (!show) {
     return null
-  }
-
-  const displayError = () => {
-    if ( !errorMessage ) {
-      return null
-    }
-    return (
-      <div style={{ color: 'red' }}>
-        {errorMessage}
-      </div>
-    )
   }
 
   const submit = async (event) => {
@@ -101,7 +82,6 @@ const NewBook = (props) => {
         </div>
         <button type='submit'>create book</button>
       </form>
-      <div>{displayError()}</div>
     </div>
   )
 }

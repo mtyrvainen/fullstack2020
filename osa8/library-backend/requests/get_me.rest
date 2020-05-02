@@ -1,0 +1,7 @@
+POST http://localhost:4000/graphql
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1hcmtvIiwiaWQiOiI1ZWFkNGFjZGY1Zjg4NDI0ZjA4MWQ4OTciLCJpYXQiOjE1ODg0MjgzOTF9.LrZnRG5CLGiYRi8Y3YoahM8-m4dXLjc0w_0xwaoj_0k
+
+{
+	"query": "query { me { username }}"
+}
