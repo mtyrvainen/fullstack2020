@@ -6,9 +6,11 @@ const jwt = require('jsonwebtoken')
 const Book = require('./models/book')
 const Author = require('./models/author')
 const User = require('./models/user')
+const { PubSub } = require('apollo-server')
 
 mongoose.set('useFindAndModify', false)
 
+const pubsub = new PubSub()
 const JWT_SECRET = 'SECRET_PASSWORD_FOR_ALL'
 const MONGODB_URI = process.env.MONGODB_URI
 console.log('Connecting to', MONGODB_URI)
@@ -79,6 +81,10 @@ const typeDefs = gql`
       password: String!
     ): Token
   }
+
+  type Subscription {
+    bookAdded: Book!
+  }
 `
 
 const resolvers = {
@@ -115,6 +121,7 @@ const resolvers = {
   Author: {
     bookCount: async (root) => {
       const books = await Book.find({ author: root._id })
+      console.log('bookCount')
       return books.length || 0
     }
   },
@@ -127,6 +134,7 @@ const resolvers = {
         throw new AuthenticationError('You need to be logged in')
       }
 
+      let newBook
       if (!existingAuthor) {
         const author = new Author({ name: args.author })
         const savedAuthor = await author.save()
@@ -141,7 +149,7 @@ const resolvers = {
             invalidArgs: args
           })
         }
-        return await book.populate('author', { name: 1, born: 1 }).execPopulate()
+        newBook = await book.populate('author', { name: 1, born: 1 }).execPopulate()
       } else {
         const book = new Book({ ...args, author: existingAuthor._id })
         
@@ -152,8 +160,11 @@ const resolvers = {
             invalidArgs: args
           })
         }
-        return await book.populate('author', { name: 1, born: 1 }).execPopulate()
+        newBook = await book.populate('author', { name: 1, born: 1 }).execPopulate()
       }
+
+      pubsub.publish('BOOK_ADDED', { bookAdded: newBook })
+      return newBook
     },
     addAuthor: async (root, args) => {
       const author = new Author({ ...args })
@@ -209,6 +220,11 @@ const resolvers = {
 
       return { value: jwt.sign(userForToken, JWT_SECRET )}
     }
+  },
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator(['BOOK_ADDED'])
+    }
   }
 }
 
@@ -226,6 +242,7 @@ const server = new ApolloServer({
   }
 })
 
-server.listen().then(({ url }) => {
+server.listen().then(({ url, subscriptionsUrl }) => {
   console.log(`Server ready at ${url}`)
+  console.log(`Subscriptions ready at ${subscriptionsUrl}`)
 })
