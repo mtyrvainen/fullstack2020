@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react'
-import { useMutation } from '@apollo/client'
-import { LOGIN, LOGGED_USER } from '../queries'
+import { useMutation, useApolloClient } from '@apollo/client'
+import { LOGIN } from '../queries'
 
 const Login = ({ show, setToken, setPage, handleNotification }) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const client = useApolloClient()
 
   const [ login, result ] = useMutation(LOGIN, {
-    refetchQueries: [ { query: LOGGED_USER } ],
+    onCompleted: () => {
+      client.resetStore()
+    },
     onError: (error) => {
       if (error.networkError) {
         handleNotification('Invalid input, please fill all the fields')
@@ -24,7 +27,6 @@ const Login = ({ show, setToken, setPage, handleNotification }) => {
       const token = result.data.login.value
       setToken(token)
       localStorage.setItem('library-user-token', token)
-      console.log('kirjautuminen onnistunut')
     }
   }, [result.data, setToken])
 

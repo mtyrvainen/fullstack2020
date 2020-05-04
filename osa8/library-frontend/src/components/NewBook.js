@@ -15,7 +15,6 @@ const NewBook = ({ show, handleNotification }) => {
       if (error.networkError) {
         handleNotification('Invalid input, please fill all the fields')
       } else if (error.graphQLErrors) {
-        console.log('error', error.message)
         handleNotification(error.message)
       } else {
         console.log('Misc. error', error.message)
@@ -29,8 +28,6 @@ const NewBook = ({ show, handleNotification }) => {
 
   const submit = async (event) => {
     event.preventDefault()
-
-    console.log('add book', title, author, published, genres)
     createBook({ variables: { title, author, published, genres } })
 
     setTitle('')

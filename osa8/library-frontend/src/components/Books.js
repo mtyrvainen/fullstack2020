@@ -1,11 +1,18 @@
 import React, { useState } from 'react'
 import { useQuery } from '@apollo/client'
-import { ALL_BOOKS } from '../queries'
+import { ALL_BOOKS, LOGGED_USER } from '../queries'
 
-const Books = ({ show, userGenre }) => {
+const Books = ({ show }) => {
   const result = useQuery(ALL_BOOKS)
   const [genreFilter, setGenreFilter] = useState('')
   const [showRecommended, setRecommended] = useState(false)
+
+  let userGenre = ''
+  let userResult = useQuery(LOGGED_USER)
+
+  if (!userResult.loading && userResult.data.me) {
+    userGenre = userResult.data.me.favoriteGenre
+  }
 
   let books = []
   let allGenres = []
@@ -14,8 +21,8 @@ const Books = ({ show, userGenre }) => {
   if (!result.loading) {
     books = result.data.allBooks
 
-    books.map(book => {
-      book.genres.map(genre => {
+    books.forEach(book => {
+      book.genres.forEach(genre => {
         if (!allGenres.includes(genre)) {
           allGenres.push(genre)
         }
@@ -45,11 +52,7 @@ const Books = ({ show, userGenre }) => {
 
   const showGenreButtons = () => {
     return <div>{allGenres.map(genre => {
-      if (genre === genreFilter) {
-        return <button style={{border: '1px solid #0000ff'}} onClick={() => handleFilter(genre)} key={genre}>{genre}</button>
-      } else {
-        return <button onClick={() => handleFilter(genre)} key={genre}>{genre}</button>
-      }
+      return <button style={{ border: genre === genreFilter ? '1px solid #0000ff' : '' }} onClick={() => handleFilter(genre)} key={genre}>{genre}</button>
     })}
     {userGenre && <button style={{ border: showRecommended && genreFilter ? '1px solid #0000ff' : '' }} onClick={() => handleFilter('recommendation')}>Recommendations</button>}
     <button style={{ border: !genreFilter ? '1px solid #0000ff' : '' }} onClick={() => setGenreFilter('')}>ALL GENRES</button></div>

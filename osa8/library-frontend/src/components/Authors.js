@@ -40,10 +40,7 @@ const Authors = ({ show, token, handleNotification }) => {
 
   const submit = async (event) => {
     event.preventDefault()
-
-    console.log('update birth year...')
     updateAuthor({ variables: { name, year } })
-
     setName('')
     setYear('')
   }

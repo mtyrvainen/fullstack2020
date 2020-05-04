@@ -1,11 +1,10 @@
 
 import React, { useState, useEffect } from 'react'
-import { useApolloClient, useQuery } from '@apollo/client'
+import { useApolloClient } from '@apollo/client'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
 import Login from './components/Login'
-import { LOGGED_USER } from './queries'
 
 const App = () => {
   const [page, setPage] = useState('authors')
@@ -13,26 +12,18 @@ const App = () => {
   const [notification, setNotification] = useState(null)
   const client = useApolloClient()
 
-  let userGenre
-  let userResult = useQuery(LOGGED_USER, { pollInterval: 1000 })
-
-  console.log('token @ App', token)
-
   useEffect(() => {
-    console.log('localstorage @ App', localStorage.getItem('library-user-token'))
     setToken(localStorage.getItem('library-user-token'))
   }, [setToken])
 
-  if (!userResult.loading && userResult.data.me) {
-    console.log('userGenre @ App', userResult.data.me)
-    userGenre = userResult.data.me.favoriteGenre
-  }
-
   const logout = () => {
-    userGenre = null
     setToken(null)
     localStorage.clear()
     client.resetStore()
+
+    if (page === 'add') {
+      setPage('login')
+    }
   }
 
   const handleNotification = (message) => {
@@ -62,7 +53,6 @@ const App = () => {
 
       <Books
         show={page === 'books'}
-        userGenre={userGenre}
       />
 
       <NewBook
