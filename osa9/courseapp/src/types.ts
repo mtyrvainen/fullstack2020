@@ -1,3 +1,19 @@
+export interface PartProps {
+  coursePart: CoursePart;
+}
+
+export interface TotalProps {
+  totalExercises: number;
+}
+
+export interface ContentProps {
+  courseParts: CoursePart[];
+}
+
+export interface HeaderProps {
+  courseName: string;
+}
+
 interface CoursePartBase {
   name: string;
   exerciseCount: number;

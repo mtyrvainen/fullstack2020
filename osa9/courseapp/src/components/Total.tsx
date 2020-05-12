@@ -1,8 +1,5 @@
 import React from 'react';
-
-interface TotalProps {
-  totalExercises: number;
-}
+import { TotalProps } from '../types';
 
 const Total: React.FC<TotalProps> = ({ totalExercises }) => {
   return (

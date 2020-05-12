@@ -1,14 +1,7 @@
 import React from 'react';
-import { CoursePart } from '../types';
-
-interface PartProps {
-  coursePart: CoursePart;
-}
+import { PartProps } from '../types';
 
 const Part: React.FC<PartProps> = ({ coursePart }) => {
-  /**
-  * Helper function for exhaustive type checking
-  */
   const assertNever = (value: never): never => {
     throw new Error(`Unhandled discriminated union member: ${JSON.stringify(value)}`);
   };

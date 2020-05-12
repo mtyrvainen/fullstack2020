@@ -1,7 +1,7 @@
-import { NewPatient, Gender } from './types';
+import { NewPatient, Gender, Entry } from './types';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const isString = (text: any): text is string => {
+export const isString = (text: any): text is string => {
   return typeof text === 'string' || text instanceof String;
 };
 
@@ -55,13 +55,42 @@ const parseGender = (gender: any): Gender => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const isArray = (param: any): param is Array<Entry> => {
+  return param.constructor === Array;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const isEntry = (param: any): param is Entry => {
+  const entryType = (param as Entry).type;
+  return  entryType === 'Hospital' || entryType === 'HealthCheck' || entryType === 'OccupationalHealthcare';
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const parseEntries = (entries: any): Entry[] => {
+  if (isArray(entries)) {
+    if (entries.length > 0) {
+      entries.forEach(entry => { 
+        if (!isEntry(entry)) {
+          throw new Error(`Incorrect entries format: ${(entry as Entry).id}`);
+        }
+      });
+    }
+  } else {
+    throw new Error(`Incorrect entries format: ${entries}`);
+  }
+
+  return entries;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const toNewPatient = (object: any): NewPatient => {
   return {
     name: parseName(object.name),
     dateOfBirth: parseDateOfBirth(object.dateOfBirth),
     ssn: parseSsn(object.ssn),
     gender: parseGender(object.gender),
-    occupation: parseOccupation(object.occupation)
+    occupation: parseOccupation(object.occupation),
+    entries: parseEntries(object.entries)
   };
 };
 
