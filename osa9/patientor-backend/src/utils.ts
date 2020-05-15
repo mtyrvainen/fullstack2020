@@ -1,4 +1,4 @@
-import { NewPatient, Gender, Entry, Diagnosis, NewHealthCheckEntry, NewHospitalEntry, NewOccupationalHealthCareEntry, DischargeData, SickLeaveData, HealthCheckRating } from './types';
+import { NewPatient, Gender, Entry, Diagnosis, NewHealthCheckEntry, NewHospitalEntry, NewOccupationalHealthcareEntry, DischargeData, SickLeaveData, HealthCheckRating } from './types';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isString = (text: any): text is string => {
@@ -159,12 +159,13 @@ const parseDischargeData = (dischargeData: any): DischargeData | undefined => {
   return dischargeData;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const parseHealthCheckRating = (healthCheckRating: any): HealthCheckRating => {
-  if (!healthCheckRating || !Object.values(HealthCheckRating).includes(healthCheckRating)) {
+  if (!Object.values(HealthCheckRating).includes(healthCheckRating)) {
     throw new Error(`Incorrect or missing HealthCheckRating: ${healthCheckRating}`);
   }
 
-  return healthCheckRating;
+  return Number(healthCheckRating);
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -181,7 +182,7 @@ const parseSickLeaveData = (sickLeaveData: any): SickLeaveData | undefined => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const toNewEntry = (object: any): NewHealthCheckEntry | NewHospitalEntry | NewOccupationalHealthCareEntry => {
+export const toNewEntry = (object: any): NewHealthCheckEntry | NewHospitalEntry | NewOccupationalHealthcareEntry => {
   const type = parseType(object.type);
   switch (type) {
     case "Hospital":
