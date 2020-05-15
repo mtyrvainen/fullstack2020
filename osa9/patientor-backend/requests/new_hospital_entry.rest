@@ -1,0 +1,14 @@
+POST http://localhost:3001/api/patients/d2773336-f723-11e9-8f0b-362b9e155667/entries
+Content-Type: application/json
+
+{
+  "type": "Hospital",
+  "date": "1984-01-15",
+  "description": "something went wrong",
+  "specialist": "Tohtori Dr",
+  "discharge": {
+    "date": "2020-01-01",
+    "criteria": "Pääsi pois"
+  },
+  "diagnosisCodes": []
+}

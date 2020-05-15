@@ -1,5 +1,5 @@
 import patientData from '../../data/patients';
-import { PublicPatient, Patient, NewPatient } from '../types';
+import { PublicPatient, Patient, NewPatient, Entry, NewHealthCheckEntry, NewOccupationalHealthCareEntry, NewHospitalEntry } from '../types';
 import uuid from 'uuid-random';
 
 const patients: Patient[] = patientData;
@@ -28,8 +28,19 @@ const addPatient = ( newPatientData: NewPatient ): Patient => {
   return newPatient;
 };
 
+const addEntryForPatient = ( id: string, newEntryData: NewHealthCheckEntry | NewHospitalEntry | NewOccupationalHealthCareEntry ): Entry => {
+  const newEntry = {
+    id: uuid(),
+    ...newEntryData
+  };
+
+  patients.find(p => p.id === id)?.entries.push(newEntry);
+  return newEntry;
+};
+
 export default {
   getPublicPatients,
   getPatientById,
-  addPatient
+  addPatient,
+  addEntryForPatient
 };
